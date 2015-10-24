@@ -87,7 +87,7 @@ public class TLSConfig {
 		if(properties.getProperty("eqtest").equalsIgnoreCase("wmethod") || properties.getProperty("eqtest").equalsIgnoreCase("wpmethod") || properties.getProperty("eqtest").equalsIgnoreCase("modifiedwmethod") ||  properties.getProperty("eqtest").equalsIgnoreCase("modifiedwpmethod") || properties.getProperty("eqtest").equalsIgnoreCase("randomwords"))
 			eqtest = properties.getProperty("eqtest").toLowerCase();
 		
-		if(properties.getProperty("eqtest_caching").equalsIgnoreCase("none") || properties.getProperty("eqtest_caching").equalsIgnoreCase("regular") || properties.getProperty("eqtest_caching").equalsIgnoreCase("errormapping"))
+		if(properties.getProperty("eqtest_caching") != null && (properties.getProperty("eqtest_caching").equalsIgnoreCase("none") || properties.getProperty("eqtest_caching").equalsIgnoreCase("regular") || properties.getProperty("eqtest_caching").equalsIgnoreCase("errormapping")))
 			eqtest_caching = properties.getProperty("eqtest_caching").toLowerCase();
 		
 		if(properties.getProperty("max_depth") != null)

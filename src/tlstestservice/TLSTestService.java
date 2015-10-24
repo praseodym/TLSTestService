@@ -1305,7 +1305,7 @@ public class TLSTestService {
 	public void loadServerKey() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeySpecException {
 		String keystoreFilename = "keys/keystore";
 
-		char[] password = "123456".toCharArray();
+		char[] password = "changeit".toCharArray();
 
 		FileInputStream fIn = new FileInputStream(keystoreFilename);
 		KeyStore keystore = KeyStore.getInstance("JKS");
@@ -1330,7 +1330,7 @@ public class TLSTestService {
 	public void loadClientKey() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, InvalidAlgorithmParameterException {
 		String keystoreFilename = "keys/keystore";
 
-		char[] password = "123456".toCharArray();
+		char[] password = "changeit".toCharArray();
 
 		FileInputStream fIn = new FileInputStream(keystoreFilename);
 		KeyStore keystore = KeyStore.getInstance("JKS");

@@ -1,0 +1,21 @@
+# Java
+lib/
+
+# IntelliJ IDEA
+*.iml
+.idea
+out/
+
+# Keys
+*.pem
+*.crt
+*.pub
+*.key
+*.p12
+*.req
+keys/keystore
+keys/demoCA/
+
+# Transient
+config.properties
+output/
