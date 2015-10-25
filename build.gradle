@@ -1,0 +1,28 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'learner.Learner'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+ext {
+    learnlibVersion = '0.9.1'
+}
+
+dependencies {
+    compile("de.learnlib:learnlib-cache:${learnlibVersion}")
+    compile("de.learnlib:learnlib-basic-eqtests:${learnlibVersion}")
+    compile("de.learnlib:learnlib-core:${learnlibVersion}")
+    compile("de.learnlib:learnlib-dhc:${learnlibVersion}")
+    compile("de.learnlib:learnlib-eqtests:${learnlibVersion}")
+    compile("de.learnlib:learnlib-lstar-generic:${learnlibVersion}")
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+}
