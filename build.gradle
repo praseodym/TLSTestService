@@ -7,6 +7,12 @@ repositories {
     mavenCentral()
 }
 
+run {
+    if ( project.hasProperty("config") ) {
+        args config
+    }
+}
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 

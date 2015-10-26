@@ -8,6 +8,4 @@ This software can be used to learn state machines of TLS implementations of both
 
 ## Usage
 
-Build with Gradle: `./gradew build`.
-
-Run the Learner class with a configuration file as argument.
+Run with Gradle: `./gradew run -Pconfig=config/openssl_client.properties`.
