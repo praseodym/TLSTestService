@@ -1,4 +1,5 @@
 package tlstestservice;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
@@ -12,18 +13,18 @@ public class TLSByteArrayInputStream extends ByteArrayInputStream {
      */
 
     public TLSByteArrayInputStream(byte[] buf) {
-		super(buf);
-	}
+        super(buf);
+    }
 
-	public TLSByteArrayInputStream(byte[] buf, int offset, int len) {
-		super(buf, offset, len);
-	}
+    public TLSByteArrayInputStream(byte[] buf, int offset, int len) {
+        super(buf, offset, len);
+    }
 
-	public int getInt8() throws IOException {
+    public int getInt8() throws IOException {
         return read();
     }
 
-	public int getInt16() throws IOException {
+    public int getInt16() throws IOException {
         return (getInt8() << 8) | getInt8();
     }
 
@@ -33,7 +34,7 @@ public class TLSByteArrayInputStream extends ByteArrayInputStream {
 
     public int getInt32() throws IOException {
         return (getInt8() << 24) | (getInt8() << 16)
-             | (getInt8() << 8) | getInt8();
+                | (getInt8() << 8) | getInt8();
     }
 
     /*

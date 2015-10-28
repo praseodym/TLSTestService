@@ -5,12 +5,12 @@ import java.io.BufferedOutputStream;
 /**
  * @author Joeri de Ruiter (j.deruiter@cs.bham.ac.uk)
  */
-public class TLSClient  implements Runnable {
+public class TLSClient implements Runnable {
     private Process p;
     private volatile boolean finished = false;
 
     public TLSClient(Process p) {
-    	finished = false;
+        finished = false;
         this.p = p;
         new Thread(this).start();
     }
@@ -20,22 +20,21 @@ public class TLSClient  implements Runnable {
     }
 
     public void run() {
-		try {
-			Thread.sleep(10);
+        try {
+            Thread.sleep(10);
 
-			BufferedOutputStream out = new BufferedOutputStream(p.getOutputStream());
+            BufferedOutputStream out = new BufferedOutputStream(p.getOutputStream());
 
-			out.write("GET / HTTP/1.0\n\n".getBytes());
-			out.flush();
-			out.close();
-			
-			p.waitFor();
-		} catch (Exception e) {
-			finished = true;
-		}
-		finally {
-			finished = true;
-		}
+            out.write("GET / HTTP/1.0\n\n".getBytes());
+            out.flush();
+            out.close();
+
+            p.waitFor();
+        } catch (Exception e) {
+            finished = true;
+        } finally {
+            finished = true;
+        }
     }
 
 }
