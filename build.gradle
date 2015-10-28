@@ -27,6 +27,7 @@ dependencies {
     compile("de.learnlib:learnlib-dhc:${learnlibVersion}")
     compile("de.learnlib:learnlib-eqtests:${learnlibVersion}")
     compile("de.learnlib:learnlib-lstar-generic:${learnlibVersion}")
+    compile("com.google.guava:guava:18.0")
 }
 
 task wrapper(type: Wrapper) {

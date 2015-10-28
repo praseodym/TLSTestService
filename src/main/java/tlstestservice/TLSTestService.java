@@ -1,32 +1,7 @@
 package tlstestservice;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.util.Arrays;
+import tlstestservice.messages.Certificate;
+import tlstestservice.messages.*;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -38,12 +13,14 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.DHPublicKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import tlstestservice.messages.*;
-
+import java.io.*;
+import java.math.BigInteger;
+import java.net.*;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 
 /**
  * @author Joeri de Ruiter (j.deruiter@cs.bham.ac.uk)
@@ -78,7 +55,7 @@ public class TLSTestService {
 //	TLS currentTLS = new TLS10();
 
 	// Special modes to trigger bugs in OpenSSL
-	boolean OPENSSL_MODE = false;
+	boolean OPENSSL_MODE = true;
 	boolean REUSE_KEYBLOCK = false;
 	
 	
@@ -272,6 +249,7 @@ public class TLSTestService {
 
 			TLSTestServiceRunnable tlsTestService = this.new TLSTestServiceRunnable(this);
 			tlsTestService.start();
+			Thread.sleep(10); // Wait for socket to start listening
 			
 			if(cmd != null && !cmd.equals("")) {
 				ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
@@ -339,7 +317,7 @@ public class TLSTestService {
 
 		output = socket.getOutputStream();
 		input = socket.getInputStream();
-		
+
 		server.close();
 	}
 
@@ -1241,63 +1219,61 @@ public class TLSTestService {
 	}
 
 	public String processSymbol(String input) throws Exception {
-		String inAction = input;
-		
+
 		if(!socket.isConnected() || socket.isClosed()) return "ConnectionClosed";
 
 		try {
-			if (inAction.equals("ClientHello")) {
-				return sendClientHelloAll();
-			} else if (inAction.equals("ClientHelloDHE")) {
-				return sendClientHelloDHE();
-			} else if (inAction.equals("ClientHelloRSA")) {
-				return sendClientHelloRSA();
-			} else if (inAction.equals("ServerHelloRSA")) {
-				return sendServerHelloRSA();
-			} else if (inAction.equals("ServerHelloDHE")) {
-				return sendServerHelloDHE();
-			} else if (inAction.equals("EmptyCertificate")) {
-				return sendEmptyCertificate();
-			} else if (inAction.equals("ServerCertificate")) {
-				return sendServerCertificate();
-			} else if (inAction.equals("ServerKeyExchange")) {
-				return sendServerKeyExchange();
-			} else if (inAction.equals("CertificateRequest")) {
-				return sendCertificateRequest();
-			} else if (inAction.equals("ServerHelloDone")) {
-				return sendServerHelloDone();
-			} else if (inAction.equals("ClientCertificate")) {
-				return sendClientCertificate();
-			} else if (inAction.equals("ClientCertificateVerify")) {
-				return sendClientCertificateVerify();
-			} else if (inAction.equals("ClientKeyExchange")) {
-				return sendClientKeyExchange();
-			} else if (inAction.equals("ChangeCipherSpec")) {
-				return sendChangeCipherSpec();
-			} else if (inAction.equals("Finished")) {
-				return sendFinished();
-			} else if (inAction.equals("ApplicationData")) {
-				return sendApplicationData();
-			} else if (inAction.equals("ApplicationDataEmpty")) {
-				return sendApplicationDataEmpty();
-			} else if (inAction.equals("HeartbeatRequest")) {
-				return sendHeartbeatRequest();
-			} else if (inAction.equals("HeartbeatResponse")) {
-				return sendHeartbeatResponse();
-			} else if (inAction.equals("Alert10")) {
-				return sendAlert10();
-			} else if (inAction.equals("Alert1100")) {
-				return sendAlert1100();
-			} else {
-				System.out.println("Unknown input symbol (" + inAction + ")...");
-				System.exit(0);
+			switch (input) {
+				case "ClientHello":
+					return sendClientHelloAll();
+				case "ClientHelloDHE":
+					return sendClientHelloDHE();
+				case "ClientHelloRSA":
+					return sendClientHelloRSA();
+				case "ServerHelloRSA":
+					return sendServerHelloRSA();
+				case "ServerHelloDHE":
+					return sendServerHelloDHE();
+				case "EmptyCertificate":
+					return sendEmptyCertificate();
+				case "ServerCertificate":
+					return sendServerCertificate();
+				case "ServerKeyExchange":
+					return sendServerKeyExchange();
+				case "CertificateRequest":
+					return sendCertificateRequest();
+				case "ServerHelloDone":
+					return sendServerHelloDone();
+				case "ClientCertificate":
+					return sendClientCertificate();
+				case "ClientCertificateVerify":
+					return sendClientCertificateVerify();
+				case "ClientKeyExchange":
+					return sendClientKeyExchange();
+				case "ChangeCipherSpec":
+					return sendChangeCipherSpec();
+				case "Finished":
+					return sendFinished();
+				case "ApplicationData":
+					return sendApplicationData();
+				case "ApplicationDataEmpty":
+					return sendApplicationDataEmpty();
+				case "HeartbeatRequest":
+					return sendHeartbeatRequest();
+				case "HeartbeatResponse":
+					return sendHeartbeatResponse();
+				case "Alert10":
+					return sendAlert10();
+				case "Alert1100":
+					return sendAlert1100();
+				default:
+					System.out.println("Unknown input symbol (" + input + ")...");
+					System.exit(1);
 			}
 		}
 		catch(SocketException e) {
 			//String outAction = "ConnectionClosedException";
-			String outAction = "ConnectionClosed";
-
-			return outAction;
+			return "ConnectionClosed";
 		}
 		return null;
 	}
@@ -1391,7 +1367,7 @@ public class TLSTestService {
 	class TLSTestServiceRunnable extends Thread {
 		TLSTestService tls;
 		boolean ready;
-		
+
 		public TLSTestServiceRunnable(TLSTestService tls) {
 			ready = false;
 			this.tls = tls;

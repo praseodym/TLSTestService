@@ -30,8 +30,8 @@ keytool -importkeystore -deststorepass changeit -destkeypass changeit -destkeyst
 openssl pkcs12 -export -in client.crt -inkey client.key -out client.p12 -name client -CAfile ca.crt -caname root
 keytool -importkeystore -deststorepass changeit -destkeypass changeit -destkeystore keystore -srckeystore client.p12 -srcstoretype PKCS12 -srcstorepass changeit -alias client
 
-openssl pkcs12 -export -in client_dh.crt -inkey client_dh.key -out client_dh.p12 -name clientdh -CAfile ca.crt -caname root
-keytool -importkeystore -deststorepass changeit -destkeypass changeit -destkeystore keystore -srckeystore client_dh.p12 -srcstoretype PKCS12 -srcstorepass changeit -alias clientdh
+#openssl pkcs12 -export -in client_dh.crt -inkey client_dh.key -out client_dh.p12 -name clientdh -CAfile ca.crt -caname root
+#keytool -importkeystore -deststorepass changeit -destkeypass changeit -destkeystore keystore -srckeystore client_dh.p12 -srcstoretype PKCS12 -srcstorepass changeit -alias clientdh
 
 # Get keys in Netscape keystore
 certutil -N -d .

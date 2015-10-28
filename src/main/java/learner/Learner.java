@@ -1,28 +1,6 @@
 package learner;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-
-import net.automatalib.automata.transout.MealyMachine;
-import net.automatalib.commons.util.mappings.MapMapping;
-import net.automatalib.util.graphs.dot.GraphDOT;
-import net.automatalib.words.Alphabet;
-import net.automatalib.words.Word;
 import de.learnlib.algorithms.dhc.mealy.MealyDHC;
 import de.learnlib.algorithms.lstargeneric.ce.ObservationTableCEXHandlers;
 import de.learnlib.algorithms.lstargeneric.closing.ClosingStrategies;
@@ -38,9 +16,29 @@ import de.learnlib.eqtests.basic.WpMethodEQOracle.MealyWpMethodEQOracle;
 import de.learnlib.logging.LearnLogger;
 import de.learnlib.oracles.CounterOracle.MealyCounterOracle;
 import de.learnlib.statistics.SimpleProfiler;
+import learner.ModifiedExperiment.ModifiedMealyExperiment;
 import learner.ModifiedWMethodEQOracle.MealyModifiedWMethodEQOracle;
 import learner.ModifiedWpMethodEQOracle.ModifiedMealyWpMethodEQOracle;
-import learner.ModifiedExperiment.ModifiedMealyExperiment;
+import net.automatalib.automata.transout.MealyMachine;
+import net.automatalib.commons.util.mappings.MapMapping;
+import net.automatalib.util.graphs.dot.GraphDOT;
+import net.automatalib.words.Alphabet;
+import net.automatalib.words.Word;
+import util.SimplifyDot;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.logging.*;
 
 /**
  * @author Joeri de Ruiter (j.deruiter@cs.bham.ac.uk)
@@ -245,12 +243,24 @@ public class Learner {
 		Files.copy(Paths.get(configFile), Paths.get(learner.config.output_dir + "/config.properties"), StandardCopyOption.REPLACE_EXISTING);
 		
 		// Write output to file
-		File dotFile = new File(learner.config.output_dir + "/learnedModel.dot");
+		String outputFilename = learner.config.output_dir + "/learnedModel.dot";
+		String outputFilenamePdf = outputFilename.replace(".dot", ".pdf");
+		File dotFile = new File(outputFilename);
 		PrintStream psDotFile = new PrintStream(dotFile);
 		GraphDOT.write(result, learner.alphabet, psDotFile);
 		
 		// Convert .dot to .pdf
-		Runtime.getRuntime().exec("dot -Tpdf -o " + learner.config.output_dir + "/learnedModel.pdf " + learner.config.output_dir + "/learnedModel.dot");
+		Runtime.getRuntime().exec("dot -Tpdf -o " + outputFilenamePdf + " " + outputFilename);
+
+		// Simplified .dot file
+		List<String> lines = Files.readAllLines(Paths.get(outputFilename));
+		List<String> simpified = SimplifyDot.simplifyDot(lines);
+		String simplifiedOutputFilename = outputFilename.replace(".dot", "_simple.dot");
+		Files.write(Paths.get(simplifiedOutputFilename), simpified, Charset.defaultCharset());
+
+		// Convert .dot to .pdf
+		String simplifiedOutputFilenamePdf = outputFilenamePdf.replace(".pdf", "_simple.pdf");
+		Runtime.getRuntime().exec("dot -Tpdf -o " + simplifiedOutputFilenamePdf + " " + simplifiedOutputFilename);
 
 		// Simplify .dot and convert to .pdf
 		//Runtime.getRuntime().exec("python simplify_dot.py " + learner.config.output_dir + "/learnedModel.dot " + learner.config.output_dir + "/learnedModel_simplified.dot").waitFor();
