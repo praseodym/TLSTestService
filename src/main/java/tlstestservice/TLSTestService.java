@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 /**
  * @author Joeri de Ruiter (j.deruiter@cs.bham.ac.uk)
+ * @author Mark Janssen (mark@ch.tudelft.nl)
  */
 public class TLSTestService {
     Socket socket;
@@ -183,8 +184,7 @@ public class TLSTestService {
         } else {
             loadServerKey();
 
-            TLSTestServiceRunnable tlsTestService = this.new TLSTestServiceRunnable(this);
-            tlsTestService.start();
+            ServerSocket serverSocket = listenSocket();
 
             if (cmd != null && !cmd.equals("")) {
                 ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
@@ -201,7 +201,15 @@ public class TLSTestService {
             }
 
             // Wait for the client to send the first message (ClientHello)
-            while (!tlsTestService.isReady()) Thread.sleep(10);
+            socket = serverSocket.accept();
+
+            socket.setTcpNoDelay(true);
+            socket.setSoTimeout(RECEIVE_MSG_TIMEOUT);
+            output = socket.getOutputStream();
+            input = socket.getInputStream();
+
+            serverSocket.close();
+            receiveMessages();
         }
     }
 
@@ -240,9 +248,7 @@ public class TLSTestService {
                 targetProcess.destroy();
             }
 
-            TLSTestServiceRunnable tlsTestService = this.new TLSTestServiceRunnable(this);
-            tlsTestService.start();
-            Thread.sleep(10); // Wait for socket to start listening
+            ServerSocket serverSocket = listenSocket();
 
             if (cmd != null && !cmd.equals("")) {
                 ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
@@ -258,8 +264,16 @@ public class TLSTestService {
                 tlsClient = new TLSClient(targetProcess);
             }
 
-            // Wait for the client to send first message (ClientHello)
-            while (!tlsTestService.isReady()) Thread.sleep(10);
+            // Wait for the client to send the first message (ClientHello)
+            socket = serverSocket.accept();
+
+            socket.setTcpNoDelay(true);
+            socket.setSoTimeout(RECEIVE_MSG_TIMEOUT);
+            output = socket.getOutputStream();
+            input = socket.getInputStream();
+
+            serverSocket.close();
+            receiveMessages();
         }
     }
 
@@ -300,17 +314,10 @@ public class TLSTestService {
         input = socket.getInputStream();
     }
 
-    public void listenSocket() throws UnknownHostException, IOException {
+    public ServerSocket listenSocket() throws UnknownHostException, IOException {
         ServerSocket server = new ServerSocket();
         server.bind(new InetSocketAddress(host, port));
-        socket = server.accept();
-        socket.setTcpNoDelay(true);
-        socket.setSoTimeout(RECEIVE_MSG_TIMEOUT);
-
-        output = socket.getOutputStream();
-        input = socket.getInputStream();
-
-        server.close();
+        return server;
     }
 
     public void closeSocket() throws IOException {
@@ -1351,39 +1358,6 @@ public class TLSTestService {
 
             tls.closeSocket();
             tls.close();
-            return;
-        }
-    }
-
-    class TLSTestServiceRunnable extends Thread {
-        TLSTestService tls;
-        boolean ready;
-
-        public TLSTestServiceRunnable(TLSTestService tls) {
-            ready = false;
-            this.tls = tls;
-        }
-
-        public boolean isReady() {
-            return ready;
-        }
-
-        public boolean isConnected() {
-            return tls.socket.isConnected();
-        }
-
-        public boolean isBound() {
-            return (tls.socket != null) && tls.socket.isBound();
-        }
-
-        public void run() {
-            try {
-                tls.listenSocket();
-                tls.receiveMessages();
-                ready = true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
