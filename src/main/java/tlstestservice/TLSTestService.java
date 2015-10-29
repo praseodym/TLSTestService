@@ -1,5 +1,7 @@
 package tlstestservice;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tlstestservice.messages.Certificate;
 import tlstestservice.messages.*;
 
@@ -27,6 +29,9 @@ import java.util.Arrays;
  * @author Mark Janssen (mark@ch.tudelft.nl)
  */
 public class TLSTestService {
+    
+    private static final Logger log = LoggerFactory.getLogger(TLSTestService.class);
+    
     Socket socket;
     OutputStream output;
     InputStream input;
@@ -214,7 +219,7 @@ public class TLSTestService {
     }
 
     public void reset() throws Exception {
-        //System.out.println("RESET");
+        //log.debug("RESET");
         socket.close();
         setInitValues();
 
@@ -368,9 +373,9 @@ public class TLSTestService {
         }
 
         if (DEBUG) {
-            System.out.println("server_random: " + Utils.bytesToHexString(server_random));
-            System.out.println("client_random: " + Utils.bytesToHexString(client_random));
-            System.out.println("key_block: " + Utils.bytesToHexString(key_block));
+            log.debug("server_random: " + Utils.bytesToHexString(server_random));
+            log.debug("client_random: " + Utils.bytesToHexString(client_random));
+            log.debug("key_block: " + Utils.bytesToHexString(key_block));
         }
 
         // Extract keys from key block
@@ -380,7 +385,7 @@ public class TLSTestService {
         index += 2 * cipherSuite.hashSize;
 
         byte[] client_write_key = Arrays.copyOfRange(key_block, index, index + cipherSuite.encCipherKeySize);
-        if (DEBUG) System.out.println("client_write_key: " + Utils.bytesToHexString(client_write_key));
+        if (DEBUG) log.debug("client_write_key: " + Utils.bytesToHexString(client_write_key));
         index += 2 * cipherSuite.encCipherKeySize;
 
         byte[] client_write_iv = null;
@@ -388,7 +393,7 @@ public class TLSTestService {
         if (cipherSuite.ivSize > 0) {
             client_write_iv = Arrays.copyOfRange(key_block, index, index + cipherSuite.ivSize);
         }
-        if (DEBUG) System.out.println("client_write_iv: " + Utils.bytesToHexString(client_write_iv));
+        if (DEBUG) log.debug("client_write_iv: " + Utils.bytesToHexString(client_write_iv));
 
         SecretKey clientCipherKey = new SecretKeySpec(client_write_key, cipherSuite.encCipherKeyAlg);
 
@@ -405,7 +410,7 @@ public class TLSTestService {
             writeCipher = cipherSuite.getEncCipher();
             writeCipher.init(Cipher.ENCRYPT_MODE, clientCipherKey, clientCipherIV);
         } else {
-            if (DEBUG) System.out.println("Setting read keys for client");
+            if (DEBUG) log.debug("Setting read keys for client");
             // Set up MAC cipher
             readMAC = cipherSuite.getMAC();
             readMAC.init(new SecretKeySpec(client_write_MAC_key, cipherSuite.macCipherAlg));
@@ -430,9 +435,9 @@ public class TLSTestService {
         }
 
         if (DEBUG) {
-            System.out.println("server_random: " + Utils.bytesToHexString(server_random));
-            System.out.println("client_random: " + Utils.bytesToHexString(client_random));
-            System.out.println("key_block: " + Utils.bytesToHexString(key_block));
+            log.debug("server_random: " + Utils.bytesToHexString(server_random));
+            log.debug("client_random: " + Utils.bytesToHexString(client_random));
+            log.debug("key_block: " + Utils.bytesToHexString(key_block));
         }
 
         // Extract keys from key block
@@ -442,7 +447,7 @@ public class TLSTestService {
         index += cipherSuite.hashSize + cipherSuite.encCipherKeySize;
 
         byte[] server_write_key = Arrays.copyOfRange(key_block, index, index + cipherSuite.encCipherKeySize);
-        if (DEBUG) System.out.println("server_write_key: " + Utils.bytesToHexString(server_write_key));
+        if (DEBUG) log.debug("server_write_key: " + Utils.bytesToHexString(server_write_key));
         index += cipherSuite.encCipherKeySize;
 
         byte[] server_write_iv = null;
@@ -450,7 +455,7 @@ public class TLSTestService {
             index += cipherSuite.ivSize;
             server_write_iv = Arrays.copyOfRange(key_block, index, index + cipherSuite.ivSize);
         }
-        if (DEBUG) System.out.println("server_write_iv: " + Utils.bytesToHexString(server_write_iv));
+        if (DEBUG) log.debug("server_write_iv: " + Utils.bytesToHexString(server_write_iv));
 
         SecretKey serverCipherKey = new SecretKeySpec(server_write_key, cipherSuite.encCipherKeyAlg);
 
@@ -469,7 +474,7 @@ public class TLSTestService {
             readCipher = cipherSuite.getEncCipher();
             readCipher.init(Cipher.DECRYPT_MODE, serverCipherKey, serverCipherIV, rand);
         } else {
-            if (DEBUG) System.out.println("Setting write keys for server");
+            if (DEBUG) log.debug("Setting write keys for server");
 
             // Set up MAC cipher
             writeMAC = cipherSuite.getMAC();
@@ -491,7 +496,7 @@ public class TLSTestService {
 
             if (contentType == (byte) 0x80) {
                 //SSLv2
-                System.out.println("SSLv2");
+                log.debug("SSLv2");
                 // Read length
                 input.read();
             }
@@ -521,8 +526,8 @@ public class TLSTestService {
                     record.decrypt(readCipher, cipherSuite.hashSize);
 
                     if (DEBUG) {
-                        System.out.println("Decrypted content: " + Utils.bytesToHexString(record.getPayload()));
-                        System.out.println("MAC: " + Utils.bytesToHexString(record.getMAC()));
+                        log.debug("Decrypted content: " + Utils.bytesToHexString(record.getPayload()));
+                        log.debug("MAC: " + Utils.bytesToHexString(record.getMAC()));
                     }
                 } catch (Exception e) {
                     if (DEBUG) e.printStackTrace();
@@ -552,7 +557,7 @@ public class TLSTestService {
                             out += alert.getLevel() + "." + alert.getDescription();
                         else {
                             out += "Malformed";
-                            System.out.println(Utils.bytesToHexString(record.getPayload()));
+                            log.debug(Utils.bytesToHexString(record.getPayload()));
                         }
                         break;
 
@@ -561,7 +566,7 @@ public class TLSTestService {
                         HandshakeMsg handshake = new HandshakeMsg(payloadStream);
 
                         if (DEBUG)
-                            System.out.println("Adding to handshake buffer (incoming message): " + Utils.bytesToHexString(handshake.getBytes()));
+                            log.debug("Adding to handshake buffer (incoming message): " + Utils.bytesToHexString(handshake.getBytes()));
 
                         handshakeMessages = Utils.concat(handshakeMessages, handshake.getBytes());
 
@@ -589,7 +594,7 @@ public class TLSTestService {
                                 // Ignore session id, compression method and extensions as we don't use these at the moment
 
                                 if (DEBUG)
-                                    System.out.println("Server protocol version: " + sh.getProtocolVersion().toString());
+                                    log.debug("Server protocol version: " + sh.getProtocolVersion().toString());
 
                                 break;
 
@@ -629,7 +634,7 @@ public class TLSTestService {
 
                                         premaster_secret_server = keyAgreement.generateSecret();
                                         if (DEBUG)
-                                            System.out.println("premaster_secret: " + Utils.bytesToHexString(premaster_secret_server));
+                                            log.debug("premaster_secret: " + Utils.bytesToHexString(premaster_secret_server));
 
                                         // Remove 0x00s from the beginning of the shared secret
                                         int i;
@@ -645,8 +650,8 @@ public class TLSTestService {
                                 }
 
                                 if (DEBUG) {
-                                    System.out.println("Premaster secret: " + Utils.bytesToHexString(premaster_secret_server));
-                                    System.out.println("Master secret: " + Utils.bytesToHexString(master_secret));
+                                    log.debug("Premaster secret: " + Utils.bytesToHexString(premaster_secret_server));
+                                    log.debug("Master secret: " + Utils.bytesToHexString(master_secret));
                                 }
 
                                 break;
@@ -688,8 +693,8 @@ public class TLSTestService {
                                 }
 
                                 if (DEBUG) {
-                                    System.out.println("Premaster secret: " + Utils.bytesToHexString(premaster_secret_client));
-                                    System.out.println("Master secret: " + Utils.bytesToHexString(master_secret));
+                                    log.debug("Premaster secret: " + Utils.bytesToHexString(premaster_secret_client));
+                                    log.debug("Master secret: " + Utils.bytesToHexString(master_secret));
                                 }
 
                                 break;
@@ -713,7 +718,7 @@ public class TLSTestService {
 
                             default:
                                 out += "Unknown";
-                                System.out.println("Unknown handshake message type: " + handshake.getType());
+                                log.debug("Unknown handshake message type: " + handshake.getType());
                                 break;
                         }
                         break;
@@ -736,7 +741,7 @@ public class TLSTestService {
                     case TLS.CONTENT_TYPE_APPLICATION:
                         out += "ApplicationData";
                         payloadStream.skip(record.getLength());
-                        if (DEBUG) System.out.println("ApplicationData: " + record.getPayload().toString());
+                        if (DEBUG) log.debug("ApplicationData: " + record.getPayload().toString());
                         break;
 
                     case TLS.CONTENT_TYPE_HEARTBEAT:
@@ -788,7 +793,7 @@ public class TLSTestService {
 
         if (ccs_out) {
             if (DEBUG)
-                System.out.println("Sending record (before encryption): " + Utils.bytesToHexString(record.getBytes()));
+                log.debug("Sending record (before encryption): " + Utils.bytesToHexString(record.getBytes()));
 
             // Add MAC and encryption if requested
             record.addMAC(writeMAC, cipherSuite.hashSize, writeMACSeqNr);
@@ -796,7 +801,7 @@ public class TLSTestService {
             record.encrypt(writeCipher, rand);
         }
 
-        if (DEBUG) System.out.println("Sending record: " + Utils.bytesToHexString(record.getBytes()));
+        if (DEBUG) log.debug("Sending record: " + Utils.bytesToHexString(record.getBytes()));
         output.write(record.getBytes());
     }
 
@@ -807,7 +812,7 @@ public class TLSTestService {
     void sendHandshakeMessage(HandshakeMsg msg, boolean updateHash) throws Exception {
         if (updateHash) {
             if (DEBUG)
-                System.out.println("Adding to handshake buffer (outgoing message): " + Utils.bytesToHexString(msg.getBytes()));
+                log.debug("Adding to handshake buffer (outgoing message): " + Utils.bytesToHexString(msg.getBytes()));
             handshakeMessages = Utils.concat(handshakeMessages, msg.getBytes());
         }
 
@@ -901,7 +906,7 @@ public class TLSTestService {
             handshakeMessages = new byte[]{};
         }
 
-        if (DEBUG) System.out.println("ClientHello contents: " + Utils.bytesToHexString(ch.getBytes()));
+        if (DEBUG) log.debug("ClientHello contents: " + Utils.bytesToHexString(ch.getBytes()));
         sendHandshakeMessage(ch);
 
         return receiveMessages();
@@ -930,7 +935,7 @@ public class TLSTestService {
 
         // OpenSSL reusing keys bug
         if (session_id.length > 0) {
-            System.out.println();
+            log.debug("");
             renegotiation_extension = new byte[5 + verify_data.length];
             renegotiation_extension[0] = (byte) 0xFF;
             renegotiation_extension[1] = 0x01;
@@ -958,7 +963,7 @@ public class TLSTestService {
             handshakeMessages = new byte[]{};
         }
 
-        if (DEBUG) System.out.println("ClientHello contents: " + Utils.bytesToHexString(ch.getBytes()));
+        if (DEBUG) log.debug("ClientHello contents: " + Utils.bytesToHexString(ch.getBytes()));
         sendHandshakeMessage(ch);
 
         return receiveMessages();
@@ -1185,8 +1190,8 @@ public class TLSTestService {
 
     public String sendFinished() throws Exception {
         if (DEBUG) {
-            System.out.println("master_secret: " + Utils.bytesToHexString(master_secret));
-            System.out.println("verify_data input: " + Utils.bytesToHexString(handshakeMessages));
+            log.debug("master_secret: " + Utils.bytesToHexString(master_secret));
+            log.debug("verify_data input: " + Utils.bytesToHexString(handshakeMessages));
         }
 
         if (CLIENT_MODE) verify_data = currentTLS.verifyDataClient(master_secret, handshakeMessages);
@@ -1267,7 +1272,7 @@ public class TLSTestService {
                 case "Alert1100":
                     return sendAlert1100();
                 default:
-                    System.out.println("Unknown input symbol (" + input + ")...");
+                    log.debug("Unknown input symbol (" + input + ")...");
                     System.exit(1);
             }
         } catch (SocketException e) {
@@ -1341,19 +1346,19 @@ public class TLSTestService {
 
             try {
                 System.out.print(tls.sendClientHelloRSA());
-                //System.out.println("ClientHelloDHE: " + tls.sendClientHelloDHE());
+                //log.debug("ClientHelloDHE: " + tls.sendClientHelloDHE());
 
                 if (args.length >= 3 && args[2].equals("1")) {
                     System.out.print(" " + tls.sendEmptyCertificate());
-                    //System.out.println("ClientCertificate: " + tls.sendClientCertificate());
+                    //log.debug("ClientCertificate: " + tls.sendClientCertificate());
                 }
 
                 System.out.print(" " + tls.sendClientKeyExchange());
                 System.out.print(" " + tls.sendChangeCipherSpec());
                 System.out.print(" " + tls.sendFinished());
-                System.out.println(" " + tls.sendApplicationData());
+                log.debug(" " + tls.sendApplicationData());
             } catch (SocketException e) {
-                System.out.println(" ConnectionClosed");
+                log.debug(" ConnectionClosed");
             }
 
             tls.closeSocket();

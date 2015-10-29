@@ -2,7 +2,6 @@ package learner;
 
 import de.learnlib.api.EquivalenceOracle;
 import de.learnlib.api.LearningAlgorithm;
-import de.learnlib.logging.LearnLogger;
 import de.learnlib.oracles.DefaultQuery;
 import de.learnlib.statistics.Counter;
 import de.learnlib.statistics.SimpleProfiler;

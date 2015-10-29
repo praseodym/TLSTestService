@@ -1,7 +1,6 @@
 package learner;
 
 import de.learnlib.api.SUL;
-import de.learnlib.logging.LearnLogger;
 import de.learnlib.oracles.SULOracle;
 import net.automatalib.words.Word;
 
@@ -14,8 +13,7 @@ public class BasicMembershipOracle extends SULOracle<String, String> {
 
     public BasicMembershipOracle(SUL<String, String> sul) {
         super(sul);
-        log = LearnLogger.getLogger(this.getClass().getName());
-        System.out.println(this.getClass().getName());
+        log = LearnLogger.getLogger(this.getClass());
     }
 
     public Word<String> answerQuery(Word<String> prefix, Word<String> suffix) {

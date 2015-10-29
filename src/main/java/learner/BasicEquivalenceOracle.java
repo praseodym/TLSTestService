@@ -1,7 +1,6 @@
 package learner;
 
 import de.learnlib.api.SUL;
-import de.learnlib.logging.LearnLogger;
 import de.learnlib.oracles.SULOracle;
 import net.automatalib.words.Word;
 

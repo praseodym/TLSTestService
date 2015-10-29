@@ -13,7 +13,6 @@ import de.learnlib.cache.mealy.MealyCacheOracle;
 import de.learnlib.eqtests.basic.RandomWordsEQOracle.MealyRandomWordsEQOracle;
 import de.learnlib.eqtests.basic.WMethodEQOracle.MealyWMethodEQOracle;
 import de.learnlib.eqtests.basic.WpMethodEQOracle.MealyWpMethodEQOracle;
-import de.learnlib.logging.LearnLogger;
 import de.learnlib.oracles.CounterOracle.MealyCounterOracle;
 import de.learnlib.statistics.SimpleProfiler;
 import learner.ModifiedExperiment.ModifiedMealyExperiment;
@@ -24,7 +23,9 @@ import net.automatalib.commons.util.mappings.MapMapping;
 import net.automatalib.util.graphs.dot.GraphDOT;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
-import util.SimplifyDot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,12 +39,17 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.*;
+import java.util.logging.FileHandler;
+import java.util.logging.SimpleFormatter;
 
 /**
  * @author Joeri de Ruiter (j.deruiter@cs.bham.ac.uk)
+ * @author Mark Janssen (mark@ch.tudelft.nl)
  */
 public class Learner {
+
+    private static final Logger log = LoggerFactory.getLogger(Learner.class);
+
     TLSConfig config;
 
     Alphabet<String> alphabet;
@@ -81,38 +87,36 @@ public class Learner {
         }
 
         LearnLogger loggerLearnlib = LearnLogger.getLogger("de.learnlib");
-        loggerLearnlib.setLevel(Level.ALL);
+//        loggerLearnlib.setLevel(Level.ALL);
         FileHandler fhLearnlibLog = new FileHandler(config.output_dir + "/learnlib.log");
-        loggerLearnlib.addHandler(fhLearnlibLog);
+//        loggerLearnlib.addHandler(fhLearnlibLog);
         fhLearnlibLog.setFormatter(new SimpleFormatter());
 
         LearnLogger loggerExperiment = LearnLogger.getLogger("learner.ModifiedExperiment");
-        loggerExperiment.setLevel(Level.ALL);
+//        loggerExperiment.setLevel(Level.ALL);
         FileHandler fhExperimentLog = new FileHandler(config.output_dir + "/experiment.log");
-        loggerExperiment.addHandler(fhExperimentLog);
+//        loggerExperiment.addHandler(fhExperimentLog);
         fhExperimentLog.setFormatter(new SimpleFormatter());
-        loggerExperiment.addHandler(new ConsoleHandler());
+        //loggerExperiment.addHandler(new ConsoleHandler());
 
         LearnLogger loggerMembershipOracle = LearnLogger.getLogger("learner.BasicMembershipOracle");
-        loggerMembershipOracle.setLevel(Level.ALL);
+//        loggerMembershipOracle.setLevel(Level.ALL);
         FileHandler fhMembershipLog = new FileHandler(config.output_dir + "/memQueries.log");
-        loggerMembershipOracle.addHandler(fhMembershipLog);
+//        loggerMembershipOracle.addHandler(fhMembershipLog);
         fhMembershipLog.setFormatter(new SimpleFormatter());
 
         LearnLogger loggerEQOracle = LearnLogger.getLogger("learner.BasicEquivalenceOracle");
-        loggerEQOracle.setLevel(Level.ALL);
+//        loggerEQOracle.setLevel(Level.ALL);
         FileHandler fhEQLog = new FileHandler(config.output_dir + "/equivQueries.log");
-        loggerEQOracle.addHandler(fhEQLog);
+//        loggerEQOracle.addHandler(fhEQLog);
         fhEQLog.setFormatter(new SimpleFormatter());
 
         LearnLogger loggerLearner = LearnLogger.getLogger("learner.Learner");
-        loggerLearner.setLevel(Level.ALL);
+//        loggerLearner.setLevel(Level.ALL);
         FileHandler fhLearnerLog = new FileHandler(config.output_dir + "/learner.log");
-        loggerLearner.addHandler(fhLearnerLog);
+//        loggerLearner.addHandler(fhLearnerLog);
         fhLearnerLog.setFormatter(new SimpleFormatter());
-        loggerLearner.addHandler(new ConsoleHandler());
-
-        Logger log = Logger.getLogger(this.getClass().getName());
+        //loggerLearner.addHandler(new ConsoleHandler());
 
         sul = new TLSSUL(config);
 
@@ -134,16 +138,16 @@ public class Learner {
             throw new Exception("Unknown learning algorithm");
         }
 
-        log.log(Level.INFO, "Using learning algorithm " + config.learning_algorithm);
+        log.info("Using learning algorithm " + config.learning_algorithm);
 
         sulEquivalenceOracle = new BasicEquivalenceOracle(sul);
         statsEQOracle = new MealyCounterOracle<>(sulEquivalenceOracle, "equivalence queries to SUL");
 
         if (config.eqtest_caching.equalsIgnoreCase("regular") || config.eqtest_caching.equalsIgnoreCase("errormapping")) {
-            log.log(Level.INFO, "Using caching for equivalence oracle");
+            log.info("Using caching for equivalence oracle");
 
             if (config.eqtest_caching.equalsIgnoreCase("errormapping")) {
-                log.log(Level.INFO, "Using error mapping for equivalence oracle");
+                log.info("Using error mapping for equivalence oracle");
                 errorMapping.put("ConnectionClosed", "ConnectionClosed");
             }
 
@@ -167,7 +171,7 @@ public class Learner {
             throw new Exception("Unknown equality test: " + config.eqtest);
         }
 
-        log.log(Level.INFO, "Using equivalence oracle " + config.eqtest);
+        log.info("Using equivalence oracle " + config.eqtest);
 
         //WpMethodEQOracle.MealyWpMethodEQOracle<String, String> eqOracle = new WpMethodEQOracle.MealyWpMethodEQOracle<String, String>(maxDepth, sulEquivalenceOracle);
     }
@@ -191,8 +195,7 @@ public class Learner {
         ModifiedMealyExperiment<String, String> experiment = new ModifiedMealyExperiment<>(learner, eqOracle, alphabet);
         //MealyExperiment<String, String> experiment = new MealyExperiment<String, String>(learner, eqOracle, alphabet);
 
-        Logger log = Logger.getLogger(this.getClass().getName());
-        log.log(Level.INFO, "Starting learning");
+        log.info("Starting learning");
 
         experiment.setProfile(true);
         experiment.setLogModels(true);
@@ -205,22 +208,25 @@ public class Learner {
 
         ((TLSSUL) sul).tls.close();
         // report results
-        log.log(Level.INFO, "-------------------------------------------------------");
+        log.info("-------------------------------------------------------");
         // profiling
-        log.log(Level.INFO, SimpleProfiler.getResults());
-        log.log(Level.INFO, "Total time: " + (end - start) + "ms (" + ((end - start) / 1000) + " s)");
+        log.info(SimpleProfiler.getResults());
+        log.info("Total time: " + (end - start) + "ms (" + ((end - start) / 1000) + " s)");
         // learning statistics
-        log.log(Level.INFO, experiment.getRounds().getSummary());
+        log.info(experiment.getRounds().getSummary());
 
-        log.log(Level.INFO, statsMemOracle.getStatisticalData().getSummary());
-        log.log(Level.INFO, statsEQOracle.getStatisticalData().getSummary());
-        log.log(Level.INFO, statsCacheEQOracle.getStatisticalData().getSummary());
-        log.log(Level.INFO, "States in final hyptothesis: " + result.size());
+        log.info(statsMemOracle.getStatisticalData().getSummary());
+        log.info(statsEQOracle.getStatisticalData().getSummary());
+        log.info(statsCacheEQOracle.getStatisticalData().getSummary());
+        log.info("States in final hypothesis: " + result.size());
 
         return result;
     }
 
     public static void main(String[] args) throws Exception {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
         String configFile;
         if (args.length > 0)
             configFile = args[0];
