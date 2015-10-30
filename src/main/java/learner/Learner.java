@@ -1,6 +1,8 @@
 package learner;
 
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
 import de.learnlib.algorithms.dhc.mealy.MealyDHC;
 import de.learnlib.algorithms.lstargeneric.ce.ObservationTableCEXHandlers;
 import de.learnlib.algorithms.lstargeneric.closing.ClosingStrategies;
@@ -33,14 +35,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.FileHandler;
-import java.util.logging.SimpleFormatter;
 
 /**
  * @author Joeri de Ruiter (j.deruiter@cs.bham.ac.uk)
@@ -80,43 +79,15 @@ public class Learner {
     public Learner(String configFile) throws Exception {
         config = new TLSConfig(configFile);
 
-        // Create output directory if it doesn't exist
-        Path path = Paths.get(config.output_dir);
-        if (Files.notExists(path)) {
-            Files.createDirectory(path);
-        }
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.reset();
+        JoranConfigurator configurator = new JoranConfigurator();
+        loggerContext.putProperty("logDirectory", config.output_dir);
+        configurator.setContext(loggerContext);
+        configurator.doConfigure(getClass().getClassLoader().getResource("log.xml"));
 
-        LearnLogger loggerLearnlib = LearnLogger.getLogger("de.learnlib");
-//        loggerLearnlib.setLevel(Level.ALL);
-        FileHandler fhLearnlibLog = new FileHandler(config.output_dir + "/learnlib.log");
-//        loggerLearnlib.addHandler(fhLearnlibLog);
-        fhLearnlibLog.setFormatter(new SimpleFormatter());
-
-        LearnLogger loggerExperiment = LearnLogger.getLogger("learner.ModifiedExperiment");
-//        loggerExperiment.setLevel(Level.ALL);
-        FileHandler fhExperimentLog = new FileHandler(config.output_dir + "/experiment.log");
-//        loggerExperiment.addHandler(fhExperimentLog);
-        fhExperimentLog.setFormatter(new SimpleFormatter());
-        //loggerExperiment.addHandler(new ConsoleHandler());
-
-        LearnLogger loggerMembershipOracle = LearnLogger.getLogger("learner.BasicMembershipOracle");
-//        loggerMembershipOracle.setLevel(Level.ALL);
-        FileHandler fhMembershipLog = new FileHandler(config.output_dir + "/memQueries.log");
-//        loggerMembershipOracle.addHandler(fhMembershipLog);
-        fhMembershipLog.setFormatter(new SimpleFormatter());
-
-        LearnLogger loggerEQOracle = LearnLogger.getLogger("learner.BasicEquivalenceOracle");
-//        loggerEQOracle.setLevel(Level.ALL);
-        FileHandler fhEQLog = new FileHandler(config.output_dir + "/equivQueries.log");
-//        loggerEQOracle.addHandler(fhEQLog);
-        fhEQLog.setFormatter(new SimpleFormatter());
-
-        LearnLogger loggerLearner = LearnLogger.getLogger("learner.Learner");
-//        loggerLearner.setLevel(Level.ALL);
-        FileHandler fhLearnerLog = new FileHandler(config.output_dir + "/learner.log");
-//        loggerLearner.addHandler(fhLearnerLog);
-        fhLearnerLog.setFormatter(new SimpleFormatter());
-        //loggerLearner.addHandler(new ConsoleHandler());
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
 
         sul = new TLSSUL(config);
 
@@ -184,11 +155,6 @@ public class Learner {
 
         // Convert .dot to .pdf
         Runtime.getRuntime().exec("dot -Tpdf -o " + config.output_dir + "/" + name + ".pdf " + config.output_dir + "/" + name + ".dot");
-
-        // Simplify .dot and convert to .pdf
-        //Runtime.getRuntime().exec("python simplify_dot.py " + config.output_dir + "/" + name + ".dot " + config.output_dir + "/" + name + "_simplified.dot").waitFor();
-        //Runtime.getRuntime().exec("dot -Tpdf -o " + config.output_dir + "/" + name + "_simplified.pdf " + config.output_dir + "/" + name+ "_simplified.dot");
-
     }
 
     public MealyMachine<?, String, ?, String> learn() throws Exception {
@@ -224,9 +190,6 @@ public class Learner {
     }
 
     public static void main(String[] args) throws Exception {
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-        SLF4JBridgeHandler.install();
-
         String configFile;
         if (args.length > 0)
             configFile = args[0];
@@ -259,10 +222,6 @@ public class Learner {
         // Convert .dot to .pdf
         String simplifiedOutputFilenamePdf = outputFilenamePdf.replace(".pdf", "_simple.pdf");
         Runtime.getRuntime().exec("dot -Tpdf -o " + simplifiedOutputFilenamePdf + " " + simplifiedOutputFilename);
-
-        // Simplify .dot and convert to .pdf
-        //Runtime.getRuntime().exec("python simplify_dot.py " + learner.config.output_dir + "/learnedModel.dot " + learner.config.output_dir + "/learnedModel_simplified.dot").waitFor();
-        //Runtime.getRuntime().exec("dot -Tpdf -o " + learner.config.output_dir + "/learnedModel_simplified.pdf " + learner.config.output_dir + "/learnedModel_simplified.dot");
 
         // Display output on screen
         //Writer w = DOT.createDotWriter(true);

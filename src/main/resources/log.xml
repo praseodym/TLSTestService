@@ -1,0 +1,64 @@
+<configuration>
+    <variable name="logPattern" value="%d{HH:mm:ss.SSS} - %msg%n"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="de.learnlib">
+        <!-- TODO: this appender probably won't output anything -->
+        <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+            <file>${logDirectory}/learnlib.log</file>
+            <param name="append" value="false"/>
+            <encoder>
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </appender>
+    </logger>
+
+    <logger name="learner.ModifiedExperiment">
+        <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+            <file>${logDirectory}/experiment.log</file>
+            <param name="append" value="false"/>
+            <encoder>
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </appender>
+    </logger>
+
+    <logger name="learner.BasicMembershipOracle">
+        <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+            <file>${logDirectory}/memQueries.log</file>
+            <param name="append" value="false"/>
+            <encoder>
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </appender>
+    </logger>
+
+    <logger name="learner.BasicEquivalenceOracle">
+        <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+            <file>${logDirectory}/equivQueries.log</file>
+            <param name="append" value="false"/>
+            <encoder>
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </appender>
+    </logger>
+
+    <logger name="learner.Learner">
+        <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+            <file>${logDirectory}/learner.log</file>
+            <param name="append" value="false"/>
+            <encoder>
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </appender>
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

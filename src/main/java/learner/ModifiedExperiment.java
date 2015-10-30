@@ -10,6 +10,8 @@ import net.automatalib.automata.fsa.DFA;
 import net.automatalib.automata.transout.MealyMachine;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
@@ -53,8 +55,8 @@ public class ModifiedExperiment<A> {
         public A run(Learner l) throws Exception {
             long start = System.currentTimeMillis();
             rounds.increment();
-            logger.logPhase("Starting round " + rounds.getCount());
-            logger.logPhase("Learning");
+            log.info("Starting round " + rounds.getCount());
+            log.info("Learning");
             profileStart("Learning");
             learningAlgorithm.startLearning();
             profileStop("Learning");
@@ -66,10 +68,10 @@ public class ModifiedExperiment<A> {
                 hyp = learningAlgorithm.getHypothesisModel();
                 if (logModels && refined) {
                     l.writeModel((MealyMachine<?, String, ?, String>) hyp, "hyp" + rounds.getCount());
-                    logger.logModel(hyp);
+                    log.info("Model: {}", hyp);
                 }
 
-                logger.logPhase("Searching for counterexample");
+                log.info("Searching for counterexample");
                 profileStart("Searching for counterexample");
                 DefaultQuery<I, D> ce = equivalenceAlgorithm.findCounterExample(hyp, inputs);
                 if (ce == null) {
@@ -78,39 +80,39 @@ public class ModifiedExperiment<A> {
                 }
                 profileStop("Searching for counterexample");
 
-                logger.logCounterexample(ce.getInput().toString());
-                logger.logCounterexample(ce.getOutput().toString());
+                log.info("Countexample input:  {}", ce.getInput().toString());
+                log.info("Countexample output: {}", ce.getOutput().toString());
 
                 // next round ...
                 rounds.increment();
-                logger.logPhase("Starting round " + rounds.getCount());
-                logger.logPhase("Learning");
+                log.info("Starting round " + rounds.getCount());
+                log.info("Learning");
                 profileStart("Learning");
                 refined = learningAlgorithm.refineHypothesis(ce);
                 if (!refined) {
-                    logger.logCounterexample("Counterexample no refinement");
-                    logger.logCounterexample("Counterexample input: " + ce.getInput().toString());
-                    logger.logCounterexample("Counterexample output: " + ce.getOutput().toString());
+                    log.info("Counterexample no refinement");
+                    log.info("Counterexample input: " + ce.getInput().toString());
+                    log.info("Counterexample output: " + ce.getOutput().toString());
 
                     DefaultQuery<String, Word<String>> query = new DefaultQuery<>((Word<String>) ce.getInput());
                     l.sulMembershipOracle.processQueries(Collections.singleton(query));
-                    logger.logCounterexample("SUL output: " + query.getOutput().toString());
+                    log.info("Counterexample SUL output: " + query.getOutput().toString());
 
                     Word<String> hypOutput = ((Output<String, Word<String>>) hyp).computeOutput((Word<String>) ce.getInput());
-                    logger.logCounterexample("Hypothesis output: " + hypOutput.toString());
+                    log.info("Counterexample Hypothesis output: " + hypOutput.toString());
 
                     throw new Exception("Counterexample is no refinement");
                 }
                 profileStop("Learning");
             }
             long end = System.currentTimeMillis();
-            logger.logPhase("Total time: " + (end - start) + "ms (" + ((end - start) / 1000) + " s)");
+            log.info("Total time: " + (end - start) + "ms (" + ((end - start) / 1000) + " s)");
 
             return hyp;
         }
     }
 
-    private static LearnLogger logger = LearnLogger.getLogger(ModifiedExperiment.class);
+    private static final Logger log = LoggerFactory.getLogger(ModifiedExperiment.class);
 
     private boolean logModels = false;
     private boolean profile = false;

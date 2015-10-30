@@ -41,8 +41,8 @@ public class TLSTestService {
 
     boolean DEBUG = false;
 
-    // Act as a TLS client
-    boolean CLIENT_MODE = true;
+    // Act as a TLS client - set by 'target' configuration setting
+    boolean CLIENT_MODE;
 
     // Restart server after every session
     boolean REQUIRE_RESTART = false;
