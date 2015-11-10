@@ -21,7 +21,7 @@ public class BasicEquivalenceOracle extends SULOracle<String, String> {
 
     public Word<String> answerQuery(Word<String> prefix, Word<String> suffix) {
         nrQueries++;
-        log.info("Equivalence query {}: {} | {}", nrQueries,  prefix, suffix);
+        log.info("Equivalence query {}: {} | {}", nrQueries, prefix, suffix);
         Word<String> answer = super.answerQuery(prefix, suffix);
         log.info("Answer: {}", answer);
         return answer;

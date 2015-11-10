@@ -547,6 +547,8 @@ public class TLSTestService {
             ByteArrayInputStream payloadStream = new ByteArrayInputStream(record.getPayload());
 
             while (payloadStream.available() > 0) {
+                if (out.length() > 0) out += '_';
+
                 switch (record.getContentType()) {
                     case TLS.CONTENT_TYPE_ALERT:
                         out += "Alert";
@@ -777,6 +779,7 @@ public class TLSTestService {
                 // We got to the end of the stream
                 socket.close();
                 //out += "ConnectionClosedEOF";
+                if (out.length() > 0) out += '_';
                 out += "ConnectionClosed";
                 break;
             }

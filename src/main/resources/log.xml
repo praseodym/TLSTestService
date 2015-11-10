@@ -1,5 +1,5 @@
 <configuration>
-    <variable name="logPattern" value="%d{HH:mm:ss.SSS} - %msg%n"/>
+    <variable name="logPattern" value="%msg%n"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
