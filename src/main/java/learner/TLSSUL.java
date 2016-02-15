@@ -43,6 +43,7 @@ class TLSSUL implements SUL<String, String> {
         String result = null;
         try {
             result = tls.processSymbol(symbol);
+            //System.out.println("Result [" + symbol + "]: " + result);
         } catch (Exception e) {
             e.printStackTrace();
         }
