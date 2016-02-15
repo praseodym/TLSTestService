@@ -1,7 +1,5 @@
 package learner;
 
-import com.google.common.base.Strings;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,21 +27,22 @@ public class SimplifyDot {
         String oldEdge = "", newEdge, label = "";
         for (String line : lines) {
             Matcher matcher = p.matcher(line);
+            String newLabel;
             if (matcher.matches()) {
                 newEdge = matcher.group(1);
-                // FIXME: more intelligent label merging
-                String newLabel = matcher.group(2);
-                String prefix = Strings.commonPrefix(label, newLabel);
-
-                label += (!label.isEmpty() ? " | " : "") + newLabel;
-
+                newLabel = matcher.group(2);
+                // TODO: ignore ConnectionClosed?
             } else {
                 newEdge = "";
+                newLabel = "";
             }
 
-            if (!oldEdge.isEmpty() && !oldEdge.equals(newEdge)) {
+            if (oldEdge.isEmpty() || oldEdge.equals(newEdge)) {
+                // TODO: more intelligent label merging (Strings.commonPrefix?)
+                label += (!label.isEmpty() ? " | " : "") + newLabel;
+            } else {
                 output.add("\t" + oldEdge + " [label=\"" + label.trim() + "\"];");
-                label = "";
+                label = newLabel;
             }
 
             if (!matcher.matches()) {
