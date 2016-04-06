@@ -322,6 +322,7 @@ public class TLSTestService {
     public ServerSocket listenSocket() throws UnknownHostException, IOException {
         ServerSocket server = new ServerSocket();
         server.bind(new InetSocketAddress(host, port));
+        server.setSoTimeout(RECEIVE_MSG_TIMEOUT);
         return server;
     }
 
