@@ -7,8 +7,9 @@ developed by Joeri de Ruiter for his paper "Protocol state fuzzing of TLS implem
 ## External Dependencies
 
 - Graphviz (`apt-get install graphviz`)
+- Network Security Service tools (`apt-get install libnss3-tools`)
 
 ## Usage
 
 A Gradle build file is included which can be used to build and run the project. To run with Gradle:
-`./gradew run -Pconfig=config/openssl_client.properties`.
+`./gradlew run -Pconfig=config/openssl_client.properties`.

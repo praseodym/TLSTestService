@@ -14,6 +14,7 @@ out/
 *.key
 *.p12
 *.req
+*.db
 keys/keystore
 keys/demoCA/
 
